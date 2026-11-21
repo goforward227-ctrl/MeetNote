@@ -1,0 +1,46 @@
+name: MeetNote
+options:
+  bundleIdPrefix: local.meetnote
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+    ENABLE_HARDENED_RUNTIME: NO
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  MeetNote:
+    type: application
+    platform: macOS
+    sources: [MeetNote]
+    info:
+      path: MeetNote/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleDisplayName: MeetNote
+        NSMicrophoneUsageDescription: 会議の音声を録音して議事録を作るために、マイクを使います。
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: local.meetnote.MeetNote
+  MeetNoteTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [MeetNoteTests]
+    dependencies:
+      - target: MeetNote
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: local.meetnote.MeetNoteTests
+schemes:
+  MeetNote:
+    build:
+      targets:
+        MeetNote: all
+    test:
+      targets: [MeetNoteTests]
