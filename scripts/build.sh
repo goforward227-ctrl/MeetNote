@@ -1,5 +1,5 @@
 #!/bin/zsh
-# MeetNote をビルドする。--install を付けると ~/Applications にコピーする。
+# MeetNote をビルドする。--install を付けると /Applications にコピーする。
 set -euo pipefail
 cd "$(dirname "$0")/.."
 xcodegen generate --quiet
@@ -15,8 +15,7 @@ xcodebuild -project MeetNote.xcodeproj -scheme MeetNote -configuration Release \
 APP="build/Build/Products/Release/MeetNote.app"
 echo "ビルド完了: $PWD/$APP"
 if [[ "${1:-}" == "--install" ]]; then
-  mkdir -p "$HOME/Applications"
-  rm -rf "$HOME/Applications/MeetNote.app"
-  cp -R "$APP" "$HOME/Applications/MeetNote.app"
-  echo "インストール完了: $HOME/Applications/MeetNote.app"
+  rm -rf "/Applications/MeetNote.app"
+  cp -R "$APP" "/Applications/MeetNote.app"
+  echo "インストール完了: /Applications/MeetNote.app"
 fi

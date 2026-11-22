@@ -12,12 +12,49 @@ enum Main {
     }
 }
 
+/// アプリをもう一度開いたとき（Spotlight やアプリケーションフォルダから）、操作画面を前に出す。
+/// メニューバーのアイコンが画面の切り欠きに隠れていても操作できるようにするため。
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// 操作画面のウインドウを開く処理。メニューバーのラベル（常に存在するビュー）が設定する。
+    @MainActor static var openMainWindow: (() -> Void)?
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        NSApp.activate(ignoringOtherApps: true)
+        guard let open = Self.openMainWindow else { return true }
+        open()
+        return false
+    }
+}
+
+/// メニューバーに出すアイコン。録音中は経過時間も出す。
+private struct MenuBarLabel: View {
+    @EnvironmentObject private var state: AppState
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        Group {
+            if state.isRecording {
+                Image(systemName: "record.circle.fill")
+                Text(state.elapsedText)
+            } else {
+                Image(systemName: state.isProcessing ? "waveform.badge.magnifyingglass" : "waveform")
+            }
+        }
+        .onAppear {
+            AppDelegate.openMainWindow = { openWindow(id: "main") }
+        }
+    }
+}
+
 struct MeetNoteApp: App {
+    static let isTesting = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var state = AppState.shared
 
     init() {
         // テスト実行時は、通知の許可ダイアログやショートカットの登録を行わない。
-        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
+        if !Self.isTesting {
             Notifier.shared.setUp()
             HotKey.shared.register {
                 Task { @MainActor in AppState.shared.toggleRecording() }
@@ -30,14 +67,19 @@ struct MeetNoteApp: App {
             MenuContentView()
                 .environmentObject(state)
         } label: {
-            if state.isRecording {
-                Image(systemName: "record.circle.fill")
-                Text(state.elapsedText)
-            } else {
-                Image(systemName: state.isProcessing ? "waveform.badge.magnifyingglass" : "waveform")
-            }
+            MenuBarLabel()
+                .environmentObject(state)
         }
         .menuBarExtraStyle(.window)
+
+        // メニューバーと同じ操作画面をウインドウでも出す。アプリを開く（開き直す）と表示される。
+        Window("MeetNote", id: "main") {
+            MenuContentView()
+                .environmentObject(state)
+        }
+        .windowResizability(.contentSize)
+        .defaultLaunchBehavior(Self.isTesting ? .suppressed : .presented)
+        .restorationBehavior(.disabled)
 
         Settings {
             SettingsView()

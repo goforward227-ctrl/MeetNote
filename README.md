@@ -80,7 +80,7 @@ ffmpeg は不要です（音声の変換は AVFoundation で行います）。
 ```sh
 ./scripts/setup-signing.sh    # 最初に1回だけ。このMac専用の署名用証明書を作る
 ./scripts/build.sh            # build/Build/Products/Release/MeetNote.app を作る
-./scripts/build.sh --install  # 作ったあと ~/Applications にコピーする
+./scripts/build.sh --install  # 作ったあと /Applications（アプリケーション）にコピーする
 ```
 
 `setup-signing.sh` は省略できますが、実行しておくことをおすすめします。証明書なしでビルドすると、ビルドし直すたびに macOS が別のアプリと見なし、マイクや画面収録の許可を毎回求められます。実行中に Mac のパスワードを求める確認が出ます。作られる証明書「MeetNote Local Signing」はログインキーチェーンに入り、このMacでの署名にだけ使われます。不要になったら「キーチェーンアクセス」から削除できます。
